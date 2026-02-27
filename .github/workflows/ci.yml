@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  lint-and-test:
+    name: Lint & Syntax Check
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.10", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml pyflakes
+
+      - name: Check syntax (pyflakes)
+        run: |
+          pyflakes firewall_tool/
+          pyflakes main.py
+          pyflakes gui.py
+
+      - name: Validate YAML policies
+        run: |
+          python -c "
+          import yaml, glob, sys
+          files = glob.glob('firewall_tool/policies/*.yaml')
+          errors = []
+          for f in files:
+              try:
+                  with open(f) as fh:
+                      yaml.safe_load(fh)
+                  print(f'  OK: {f}')
+              except yaml.YAMLError as e:
+                  errors.append(f'  FAIL: {f} -> {e}')
+          if errors:
+              print('\n'.join(errors))
+              sys.exit(1)
+          else:
+              print(f'All {len(files)} policy file(s) are valid.')
+          "
+
+      - name: Test dry-run (Linux platform)
+        run: |
+          python main.py firewall_tool/policies/sample_policy.yaml --dry-run --platform linux

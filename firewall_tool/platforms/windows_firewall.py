@@ -1,5 +1,4 @@
 import subprocess
-import sys
 import json
 from typing import List, Dict, Any, Tuple
 from ..firewall_manager import FirewallManager

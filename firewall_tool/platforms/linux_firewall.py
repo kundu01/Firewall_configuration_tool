@@ -186,7 +186,7 @@ class LinuxFirewallManager(FirewallManager):
             # in_iface = parts[6]
             # out_iface = parts[7]
             source = parts[8]    # source IP
-            dest = parts[9] if len(parts) > 9 else "0.0.0.0/0"
+            # parts[9] is destination IP — not used in our rule dict but parsed for completeness
         except (IndexError, ValueError):
             return None
 

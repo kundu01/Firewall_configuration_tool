@@ -7,7 +7,6 @@ import yaml
 import json
 import threading
 import ctypes
-import subprocess
 from datetime import datetime
 
 # ─────────────────────────────────────────────
@@ -806,7 +805,7 @@ class FirewallApp:
                 rules = fetch_manager.list_rules()
                 self.root.after(0, lambda: self._on_live_rules_fetched(rules))
             except Exception as e:
-                self.root.after(0, lambda: self.log(f"Error fetching live rules: {e}", "error"))
+                self.root.after(0, lambda err=e: self.log(f"Error fetching live rules: {err}", "error"))
                 self.root.after(0, lambda: self.status.set("Error fetching live rules"))
 
         threading.Thread(target=_fetch, daemon=True).start()
